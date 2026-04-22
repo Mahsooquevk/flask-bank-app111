@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw Money</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+}
+
+.container{
+width:450px;
+padding:35px;
+border-radius:15px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(12px);
+box-shadow:0 0 25px rgba(0,0,0,0.4);
+}
+
+h2{
+text-align:center;
+margin-bottom:25px;
+font-size:28px;
+}
+
+label{
+font-size:14px;
+opacity:0.9;
+}
+
+select,input{
+width:100%;
+padding:12px;
+margin-top:6px;
+border:none;
+border-radius:8px;
+outline:none;
+font-size:14px;
+}
+
+.row{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:18px;
+}
+
+.col{
+flex:1;
+}
+
+.or{
+margin-top:25px;
+font-weight:bold;
+color:#00e0ff;
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:linear-gradient(90deg,#ff7b00,#ff3d00);
+color:white;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+transition:0.3s;
+margin-top:10px;
+}
+
+button:hover{
+transform:scale(1.05);
+box-shadow:0 0 15px #ff7b00;
+}
+
+.back{
+display:block;
+text-align:center;
+margin-top:18px;
+font-size:13px;
+}
+
+.back a{
+color:#00e0ff;
+text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🏧 Withdraw Money</h2>
+
+<form method="post">
+
+<!-- SAME LINE: Customer OR Account -->
+<div class="row">
+
+    <!-- Customer -->
+    <div class="col">
+        <label>Customer</label>
+        <select id="customerSelect" name="customer" required>
+            <option value="">Select Name</option>
+            {% for c in customers %}
+            <option value="{{c.id}}" 
+                    data-acc="{{c.account_number}}" 
+                    data-mobile="{{c.mobile}}">
+                {{c.name}}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- OR -->
+    <div class="or">OR</div>
+
+    <!-- Account -->
+    <div class="col">
+        <label>Account</label>
+        <select id="accountSelect" required>
+            <option value="">Select Acc No</option>
+            {% for c in customers %}
+            <option value="{{c.id}}" 
+                    data-name="{{c.name}}" 
+                    data-mobile="{{c.mobile}}">
+                {{c.account_number}}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+</div>
+
+<!-- Phone -->
+<label>Phone Number</label>
+<input type="text" id="phoneInput" readonly placeholder="Auto-filled" style="margin-bottom:18px;">
+
+<!-- Amount -->
+<label>Amount</label>
+<input name="amount" type="number" placeholder="Enter withdraw amount" required>
+
+<button type="submit">Withdraw Money</button>
+
+</form>
+
+<div class="back">
+<a href="/dashboard">⬅ Back to Dashboard</a>
+</div>
+
+</div>
+
+<!-- ✅ AUTO SYNC + PHONE SCRIPT -->
+<script>
+
+let customerSelect = document.getElementById("customerSelect");
+let accountSelect = document.getElementById("accountSelect");
+let phoneInput = document.getElementById("phoneInput");
+
+// Customer → Account + Phone
+customerSelect.addEventListener("change", function(){
+
+    let selectedOption = this.options[this.selectedIndex];
+    let acc = selectedOption.getAttribute("data-acc");
+    let mobile = selectedOption.getAttribute("data-mobile");
+
+    // Sync account
+    for(let i=0; i<accountSelect.options.length; i++){
+        if(accountSelect.options[i].text == acc){
+            accountSelect.selectedIndex = i;
+            break;
+        }
+    }
+
+    // Fill phone
+    phoneInput.value = mobile || "";
+});
+
+// Account → Customer + Phone
+accountSelect.addEventListener("change", function(){
+
+    let selectedOption = this.options[this.selectedIndex];
+    let id = selectedOption.value;
+    let mobile = selectedOption.getAttribute("data-mobile");
+
+    // Sync customer
+    customerSelect.value = id;
+
+    // Fill phone
+    phoneInput.value = mobile || "";
+});
+
+</script>
+
+<!-- 🔴 AUTO LOGOUT SCRIPT -->
+<script>
+
+let warningTime = 25000;
+let logoutTime = 30000;
+
+setTimeout(function () {
+
+    let popup = document.createElement("div");
+    popup.id = "sessionPopup";
+    popup.innerHTML = `
+        <div style="
+            position:fixed;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            background:#fff;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 15px rgba(0,0,0,0.3);
+            text-align:center;
+            z-index:9999;
+        ">
+            <h3 style="color:red;">⚠ Session Expiring!</h3>
+            <p>You will be logged out in 5 seconds.</p>
+            <button onclick="stayLoggedIn()" style="
+                padding:8px 15px;
+                background:green;
+                color:white;
+                border:none;
+                border-radius:5px;
+                cursor:pointer;
+            ">Stay Logged In</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+
+}, warningTime);
+
+setTimeout(function () {
+    window.location.href = "/logout";
+}, logoutTime);
+
+function stayLoggedIn() {
+    let popup = document.getElementById("sessionPopup");
+    if (popup) popup.remove();
+
+    fetch("/dashboard")
+        .then(() => location.reload());
+}
+
+</script>
+
+</body>
+</html>

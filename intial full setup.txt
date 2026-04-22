@@ -1,0 +1,242 @@
+from flask import Flask, render_template, request, redirect, session
+import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = "secret123"   # Change this in production
+
+
+# ---------------- DB CONNECTION ----------------
+def get_db():
+    conn = sqlite3.connect("bank.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# ---------------- AUTO SESSION TIMEOUT ----------------
+@app.before_request
+def session_timeout():
+
+    if "user" in session:
+
+        now = datetime.now().timestamp()
+        last_activity = session.get("last_activity", now)
+
+        # 3 Minut timeout
+        if now - last_activity > 300:
+            session.clear()
+            return redirect("/")
+
+        session["last_activity"] = now
+
+
+# ---------------- LOGIN ----------------
+@app.route("/", methods=["GET", "POST"])
+def login():
+
+    if request.method == "POST":
+        user = request.form["username"]
+        pwd = request.form["password"]
+
+        db = get_db()
+        result = db.execute(
+            "SELECT * FROM users WHERE username=? AND password=?",
+            (user, pwd)
+        ).fetchone()
+
+        if result:
+            session["user"] = user
+            session["last_activity"] = datetime.now().timestamp()
+            return redirect("/dashboard")
+        else:
+            return "❌ Invalid username or password"
+
+    return render_template("login.html")
+
+
+# ---------------- LOGOUT ----------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+
+# ---------------- DASHBOARD ----------------
+@app.route("/dashboard")
+def dashboard():
+
+    if "user" not in session:
+        return redirect("/")
+
+    db = get_db()
+
+    total_customers = db.execute("SELECT COUNT(*) FROM customers").fetchone()[0]
+
+    deposits = db.execute(
+        "SELECT SUM(amount) FROM transactions WHERE type='deposit'"
+    ).fetchone()[0] or 0
+
+    withdraw = db.execute(
+        "SELECT SUM(amount) FROM transactions WHERE type='withdraw'"
+    ).fetchone()[0] or 0
+
+    balance = deposits - withdraw
+
+    return render_template(
+        "dashboard.html",
+        customers=total_customers,
+        deposits=deposits,
+        withdraw=withdraw,
+        balance=balance
+    )
+
+
+# ---------------- CREATE ACCOUNT ----------------
+@app.route("/create_account", methods=["GET", "POST"])
+def create_account():
+
+    if "user" not in session:
+        return redirect("/")
+
+    db = get_db()
+    error = None
+
+    used_numbers = db.execute(
+        "SELECT account_number FROM customers ORDER BY account_number"
+    ).fetchall()
+
+    used_numbers = [int(row["account_number"]) for row in used_numbers if row["account_number"].isdigit()]
+
+    next_acc = None
+    for i in range(100, 1001):
+        if i not in used_numbers:
+            next_acc = i
+            break
+
+    if request.method == "POST":
+
+        acc_no = request.form["account_number"]
+        name = request.form["name"]
+        mobile = request.form["mobile"]
+        address = request.form["address"]
+
+        if not acc_no.isdigit() or not (100 <= int(acc_no) <= 1000):
+            error = "Account number must be between 100 and 1000"
+
+        else:
+            existing_acc = db.execute(
+                "SELECT * FROM customers WHERE account_number=?",
+                (acc_no,)
+            ).fetchone()
+
+            existing_mobile = db.execute(
+                "SELECT * FROM customers WHERE mobile=?",
+                (mobile,)
+            ).fetchone()
+
+            if existing_acc:
+                error = f"Account exists! Try {next_acc}"
+            elif existing_mobile:
+                error = "Mobile number already exists!"
+            else:
+                db.execute(
+                    "INSERT INTO customers(account_number,name,mobile,address,created) VALUES (?,?,?,?,?)",
+                    (acc_no, name, mobile, address, datetime.now())
+                )
+                db.commit()
+                return redirect("/dashboard")
+
+    return render_template("create_account.html", error=error, next_acc=next_acc)
+
+
+# ---------------- DEPOSIT ----------------
+@app.route("/deposit", methods=["GET", "POST"])
+def deposit():
+
+    if "user" not in session:
+        return redirect("/")
+
+    db = get_db()
+    customers = db.execute("SELECT * FROM customers").fetchall()
+
+    if request.method == "POST":
+
+        cid = request.form["customer"]
+        amount = request.form["amount"]
+
+        db.execute(
+            "INSERT INTO transactions(customer_id,type,amount,date) VALUES (?,?,?,?)",
+            (cid, "deposit", amount, datetime.now())
+        )
+
+        db.commit()
+        return redirect("/dashboard")
+
+    return render_template("deposit.html", customers=customers)
+
+
+# ---------------- WITHDRAW ----------------
+@app.route("/withdraw", methods=["GET", "POST"])
+def withdraw():
+
+    if "user" not in session:
+        return redirect("/")
+
+    db = get_db()
+    customers = db.execute("SELECT * FROM customers").fetchall()
+
+    if request.method == "POST":
+
+        cid = request.form["customer"]
+        amount = request.form["amount"]
+
+        db.execute(
+            "INSERT INTO transactions(customer_id,type,amount,date) VALUES (?,?,?,?)",
+            (cid, "withdraw", amount, datetime.now())
+        )
+
+        db.commit()
+        return redirect("/dashboard")
+
+    return render_template("withdraw.html", customers=customers)
+
+
+# ---------------- REPORT ----------------
+@app.route("/report")
+def report():
+
+    if "user" not in session:
+        return redirect("/")
+
+    db = get_db()
+
+    data = db.execute("""
+        SELECT customers.account_number, customers.name,
+               transactions.type, transactions.amount, transactions.date
+        FROM transactions
+        JOIN customers ON customers.id = transactions.customer_id
+        ORDER BY date DESC
+    """).fetchall()
+
+    return render_template("report.html", data=data)
+
+
+# ---------------- CUSTOMER LIST ----------------
+@app.route("/customers")
+def customers_list():
+
+    if "user" not in session:
+        return redirect("/")
+
+    db = get_db()
+
+    customers = db.execute("""
+        SELECT * FROM customers ORDER BY created DESC
+    """).fetchall()
+
+    return render_template("customers.html", customers=customers)
+
+
+# ---------------- RUN APP ----------------
+if __name__ == "__main__":
+    app.run(debug=True)

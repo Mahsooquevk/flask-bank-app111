@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Bank Account</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+body{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+}
+.container{
+width:420px;
+padding:35px;
+border-radius:15px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(12px);
+box-shadow:0 0 25px rgba(0,0,0,0.4);
+}
+h2{
+text-align:center;
+margin-bottom:25px;
+font-size:28px;
+}
+label{
+font-size:14px;
+opacity:0.9;
+}
+input, textarea{
+width:100%;
+padding:12px;
+margin-top:6px;
+margin-bottom:18px;
+border:none;
+border-radius:8px;
+outline:none;
+font-size:14px;
+}
+textarea{
+resize:none;
+height:80px;
+}
+button[type="submit"]{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:linear-gradient(90deg,#00c6ff,#0072ff);
+color:white;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+transition:0.3s;
+}
+button[type="submit"]:hover{
+transform:scale(1.05);
+box-shadow:0 0 15px #00c6ff;
+}
+.back{
+display:block;
+text-align:center;
+margin-top:18px;
+font-size:13px;
+}
+.back a{
+color:#00e0ff;
+text-decoration:none;
+}
+.suggestion{
+font-size:13px;
+color:#00ffcc;
+margin-top:-10px;
+margin-bottom:10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ✅ ERROR POPUP -->
+{% if error %}
+<script>
+    alert("{{ error }}");
+</script>
+{% endif %}
+
+<div class="container">
+<h2>🏦 Create Account</h2>
+
+<form method="post" id="createForm">
+
+  <label>Name</label>
+  <input name="name" placeholder="Enter full name" required>
+
+  <label>Mobile</label>
+  <input
+    name="mobile"
+    placeholder="Enter 10-digit mobile number"
+    type="text"
+    maxlength="10"
+    required
+    onkeydown="blockNonNumeric(event)"
+  >
+
+  <label>Account Number</label>
+  <input
+    name="account_number"
+    id="accNum"
+    type="text"
+    maxlength="4"
+    value="{{ next_acc }}"
+    placeholder="Auto-generated account number"
+    readonly
+  >
+
+  <!-- ✅ SHOW NEXT AVAILABLE -->
+  <div class="suggestion">
+    Next available account number: <b>{{ next_acc }}</b>
+  </div>
+
+  <label>Address</label>
+  <textarea name="address" placeholder="Enter address"></textarea>
+
+  <button type="submit">Create Account</button>
+
+</form>
+
+<div class="back">
+  <a href="/dashboard">⬅ Back to Dashboard</a>
+</div>
+
+</div>
+
+<script>
+
+// Allow only numbers
+function blockNonNumeric(e) {
+  const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Enter'];
+  if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+    e.preventDefault();
+  }
+}
+
+// Mobile validation
+document.getElementById("createForm").addEventListener("submit", function(e){
+
+  let mobile = document.querySelector('[name="mobile"]').value;
+
+  if(mobile.length !== 10){
+    alert("❌ Mobile number must be 10 digits");
+    e.preventDefault();
+  }
+
+});
+
+</script>
+<!-- 🔴 AUTO LOGOUT SCRIPT -->
+<script>
+let warningTime = 25000; // 25 sec
+let logoutTime = 30000;  // 30 sec
+
+// Warning popup
+setTimeout(function () {
+
+    let popup = document.createElement("div");
+    popup.id = "sessionPopup";
+    popup.innerHTML = `
+        <div style="
+            position:fixed;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            background:#fff;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0 0 15px rgba(0,0,0,0.3);
+            text-align:center;
+            z-index:9999;
+        ">
+            <h3 style="color:red;">⚠ Session Expiring!</h3>
+            <p>You will be logged out in 5 seconds.</p>
+            <button onclick="stayLoggedIn()" style="
+                padding:8px 15px;
+                background:green;
+                color:white;
+                border:none;
+                border-radius:5px;
+                cursor:pointer;
+            ">Stay Logged In</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+
+}, warningTime);
+
+
+// Auto logout
+setTimeout(function () {
+    window.location.href = "/logout";
+}, logoutTime);
+
+
+// Stay logged in
+function stayLoggedIn() {
+
+    let popup = document.getElementById("sessionPopup");
+    if (popup) popup.remove();
+
+    fetch("/dashboard")
+        .then(() => location.reload());
+}
+</script>
+
+</body>
+</html>

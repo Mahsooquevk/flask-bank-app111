@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Bank Account</title>
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+body{
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+}
+.container{
+width:420px;
+padding:35px;
+border-radius:15px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(12px);
+box-shadow:0 0 25px rgba(0,0,0,0.4);
+}
+h2{
+text-align:center;
+margin-bottom:25px;
+font-size:28px;
+}
+label{
+font-size:14px;
+opacity:0.9;
+}
+input, textarea{
+width:100%;
+padding:12px;
+margin-top:6px;
+margin-bottom:18px;
+border:none;
+border-radius:8px;
+outline:none;
+font-size:14px;
+}
+textarea{
+resize:none;
+height:80px;
+}
+.acc-wrap{
+position:relative;
+}
+.acc-wrap input{
+padding-right:90px;
+background:#fff;
+color:#333;
+letter-spacing:1px;
+font-weight:600;
+}
+.acc-refresh{
+position:absolute;
+right:8px;
+top:50%;
+transform:translateY(-50%);
+background:linear-gradient(90deg,#00c6ff,#0072ff);
+border:none;
+border-radius:6px;
+color:white;
+font-size:11px;
+font-weight:bold;
+padding:5px 10px;
+cursor:pointer;
+width:auto;
+transition:0.2s;
+letter-spacing:0.03em;
+}
+.acc-refresh:hover{
+transform:translateY(-50%) scale(1.05);
+box-shadow:0 0 8px #00c6ff;
+}
+.acc-hint{
+font-size:11px;
+opacity:0.55;
+margin-top:-14px;
+margin-bottom:14px;
+display:block;
+}
+button[type="submit"]{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:linear-gradient(90deg,#00c6ff,#0072ff);
+color:white;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+transition:0.3s;
+}
+button[type="submit"]:hover{
+transform:scale(1.05);
+box-shadow:0 0 15px #00c6ff;
+}
+.back{
+display:block;
+text-align:center;
+margin-top:18px;
+font-size:13px;
+}
+.back a{
+color:#00e0ff;
+text-decoration:none;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>🏦 Create Account</h2>
+<form method="post" id="createForm">
+
+  <label>Name</label>
+  <input name="name" placeholder="Enter full name" required>
+
+  <label>Mobile</label>
+  <input
+    name="mobile"
+    placeholder="Enter mobile number"
+    type="number"
+    inputmode="numeric"
+    required
+    onkeydown="blockNonNumeric(event)"
+  >
+
+  <label>Account Number</label>
+  <div class="acc-wrap">
+    <input
+      name="account_number"
+      id="accNum"
+      type="number"
+      inputmode="numeric"
+      placeholder="Auto-generated"
+      required
+      readonly
+      onkeydown="blockNonNumeric(event)"
+    >
+    <button type="button" class="acc-refresh" onclick="generateAccNum()" title="Generate new number">⟳ New</button>
+  </div>
+  <span class="acc-hint">Unique 10-digit account number — click ⟳ New to regenerate</span>
+
+  <label>Address</label>
+  <textarea name="address" placeholder="Enter address"></textarea>
+
+  <button type="submit">Create Account</button>
+</form>
+<div class="back">
+  <a href="/dashboard">⬅ Back to Dashboard</a>
+</div>
+</div>
+
+<script>
+function generateAccNum() {
+  // 10-digit number starting with 1-9
+  const first = Math.floor(Math.random() * 9) + 1;
+  let rest = '';
+  for (let i = 0; i < 9; i++) rest += Math.floor(Math.random() * 10);
+  document.getElementById('accNum').value = first + rest;
+}
+
+function blockNonNumeric(e) {
+  const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Enter'];
+  if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault();
+}
+
+// Auto-generate on page load
+generateAccNum();
+</script>
+</body>
+</html>

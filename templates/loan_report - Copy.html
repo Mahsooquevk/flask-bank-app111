@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loan Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f2027;
+            color: white;
+            padding: 20px;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        input[type=text] {
+            padding: 10px;
+            width: 350px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e3c52;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        th {
+            background: #00c6ff;
+            color: black;
+        }
+        tr:hover {
+            background: #2c5364;
+        }
+    </style>
+</head>
+<body>
+
+<h2>📊 Loan Report</h2>
+
+<input type="text" id="searchInput" placeholder="Search by Account No / Name / Mobile" onkeyup="filterTable()">
+
+<table id="loanTable">
+    <thead>
+        <tr>
+            <th>Account No</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Loan Date</th>
+            <th>Loan Amount</th>
+            <th>Total Months</th>
+            <th>Paid Months</th>
+            <th>Pending Months</th>
+            <th>Total Paid</th>
+            <th>Remaining</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in report %}
+        <tr>
+            <td>{{r.account}}</td>
+            <td>{{r.name}}</td>
+            <td>{{r.mobile}}</td>
+            <td>{{r.date}}</td>
+            <td>{{r.loan_amount}}</td>
+            <td>{{r.months}}</td>
+            <td>{{r.paid_months}}</td>
+            <td>{{r.pending_months}}</td>
+            <td>{{r.total_paid}}</td>
+            <td>{{r.remaining}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function filterTable() {
+    var input = document.getElementById("searchInput");
+    var filter = input.value.toLowerCase();
+    var table = document.getElementById("loanTable");
+    var tr = table.getElementsByTagName("tr");
+
+    for (var i = 1; i < tr.length; i++) { // skip header
+        var tdAccount = tr[i].getElementsByTagName("td")[0];
+        var tdName = tr[i].getElementsByTagName("td")[1];
+        var tdMobile = tr[i].getElementsByTagName("td")[2];
+
+        if (tdAccount && tdName && tdMobile) {
+            var accountText = tdAccount.textContent || tdAccount.innerText;
+            var nameText = tdName.textContent || tdName.innerText;
+            var mobileText = tdMobile.textContent || tdMobile.innerText;
+
+            if (accountText.toLowerCase().indexOf(filter) > -1 ||
+                nameText.toLowerCase().indexOf(filter) > -1 ||
+                mobileText.toLowerCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+</script>
+
+</body>
+</html>

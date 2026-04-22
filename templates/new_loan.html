@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>New Loan</title>
+</head>
+<body>
+<h2>Grant New Loan</h2>
+
+{% if error %}
+<p style="color:red">{{error}}</p>
+{% endif %}
+
+<form method="POST">
+    <label>Customer:</label>
+    <select name="customer" required>
+        {% for cust in customers %}
+        <option value="{{cust.id}}">{{cust.account_number}} - {{cust.name}}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label>Loan Amount:</label>
+    <input type="number" step="0.01" name="loan_amount" required><br><br>
+
+    <label>Total Months:</label>
+    <input type="number" name="months" required>
+
+    <label>Service Charge:</label>
+    <input type="number" step="0.01" name="service_charge" value="0"><br><br>
+
+    <button type="submit">Grant Loan</button>
+</form>
+
+<a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>

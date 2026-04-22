@@ -1,0 +1,19 @@
+<h2>🧾 Service Charge Report</h2>
+
+<table border="1">
+<tr>
+<th>Name</th><th>Account</th><th>Charge</th><th>Date</th>
+</tr>
+
+{% for row in data %}
+<tr>
+<td>{{row.name}}</td>
+<td>{{row.account_number}}</td>
+<td>{{row.service_charge}}</td>
+<td>{{row.created}}</td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>Total: {{total}}</h3>
+<a href="/report">⬅ Back</a>

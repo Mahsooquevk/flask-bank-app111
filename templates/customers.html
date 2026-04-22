@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer List</title>
+<style>
+body{ font-family: Arial, Helvetica, sans-serif; padding:20px; background:#f4f4f4; }
+table{ width:100%; border-collapse: collapse; background:white; }
+th, td{ padding:10px; border:1px solid #ccc; text-align:left; }
+th{ background:#0072ff; color:white; }
+tr:nth-child(even){ background:#f2f2f2; }
+button{ padding:5px 10px; background:red; color:white; border:none; cursor:pointer; border-radius:4px; }
+button:disabled{ background:#ccc; cursor:not-allowed; }
+h2{ text-align:center; margin-bottom:20px; }
+</style>
+</head>
+<body>
+<h2>Customer List</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Account No</th>
+      <th>Name</th>
+      <th>Mobile</th>
+      <th>Address</th>
+      <th>Created</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for cust in customers %}
+    <tr>
+      <td>{{cust.account_number}}</td>
+      <td>{{cust.name}}</td>
+      <td>{{cust.mobile}}</td>
+      <td>{{cust.address}}</td>
+      <td>{{cust.created}}</td>
+      <td>
+        <form method="POST" action="/delete_customer/{{cust.id}}">
+          <button type="submit" {% if cust.id != last_customer_id %}disabled{% endif %}>
+            Delete
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</body>
+</html>

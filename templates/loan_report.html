@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loan Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f2027;
+            color: white;
+            padding: 20px;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            background: #1e3c52;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .summary div {
+            text-align: center;
+        }
+        input[type=text] {
+            padding: 10px;
+            width: 350px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e3c52;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        th {
+            background: #00c6ff;
+            color: black;
+        }
+        tr:hover {
+            background: #2c5364;
+        }
+        a {
+            color: #00c6ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>📊 Loan Report</h2>
+
+<!-- ✅ SUMMARY SECTION -->
+<div class="summary">
+    <div>
+        <h3>Total Loans</h3>
+        <p>{{ total_loans }}</p>
+    </div>
+    <div>
+        <h3>Total Amount</h3>
+        <p>{{ total_amount }}</p>
+    </div>
+    <div>
+        <h3>Total Paid</h3>
+        <p>{{ total_paid }}</p>
+    </div>
+    <div>
+        <h3>Balance</h3>
+        <p>{{ total_balance }}</p>
+    </div>
+</div>
+
+<!-- ✅ SEARCH -->
+<input type="text" id="searchInput" placeholder="Search by Account No / Name / Mobile" onkeyup="filterTable()">
+
+<!-- ✅ TABLE -->
+<table id="loanTable">
+    <thead>
+        <tr>
+            <th>Account No</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Loan Date</th>
+            <th>Loan Amount</th>
+            <th>Total Months</th>
+            <th>Total Paid</th>
+            <th>Remaining</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in data %}
+        <tr>
+            <td>{{ r.account_number }}</td>
+            <td>{{ r.name }}</td>
+            <td>{{ r.mobile }}</td>
+            <td>{{ r.created }}</td>
+            <td>{{ r.loan_amount }}</td>
+            <td>{{ r.months }}</td>
+            <td>{{ r.total_paid }}</td>
+            <td>{{ r.loan_amount - r.total_paid }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<br>
+<a href="/dashboard">⬅ Back to Dashboard</a>
+
+<!-- ✅ SEARCH SCRIPT -->
+<script>
+function filterTable() {
+    var input = document.getElementById("searchInput");
+    var filter = input.value.toLowerCase();
+    var table = document.getElementById("loanTable");
+    var tr = table.getElementsByTagName("tr");
+
+    for (var i = 1; i < tr.length; i++) {
+        var tdAccount = tr[i].getElementsByTagName("td")[0];
+        var tdName = tr[i].getElementsByTagName("td")[1];
+        var tdMobile = tr[i].getElementsByTagName("td")[2];
+
+        if (tdAccount && tdName && tdMobile) {
+            var accountText = tdAccount.textContent || tdAccount.innerText;
+            var nameText = tdName.textContent || tdName.innerText;
+            var mobileText = tdMobile.textContent || tdMobile.innerText;
+
+            if (accountText.toLowerCase().indexOf(filter) > -1 ||
+                nameText.toLowerCase().indexOf(filter) > -1 ||
+                mobileText.toLowerCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+</script>
+
+</body>
+</html>
