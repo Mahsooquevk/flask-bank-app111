@@ -4,6 +4,53 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Personal Finance Bank</title>
+<!-- ====== ADD THIS INSIDE <head> OF ALL YOUR HTML TEMPLATES ====== -->
+
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#00c6ff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PF Bank">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+<script>
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/sw.js')
+        .then(reg => console.log('SW registered'))
+        .catch(err => console.log('SW error:', err));
+    });
+  }
+
+  // Show Install Button (Android Chrome)
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'block';
+  });
+
+  function installApp() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    }
+  }
+</script>
+
+<!-- ====== OPTIONAL: Add this install button anywhere in your <body> ====== -->
+<!--
+<button id="installBtn" onclick="installApp()"
+  style="display:none; position:fixed; bottom:20px; right:20px; z-index:9999;
+         padding:12px 20px; background:linear-gradient(90deg,#00c6ff,#0072ff);
+         color:white; border:none; border-radius:25px; font-size:15px;
+         cursor:pointer; box-shadow:0 4px 15px rgba(0,198,255,0.4);">
+  📲 Install App
+</button>
+-->
 
 <style>
 
