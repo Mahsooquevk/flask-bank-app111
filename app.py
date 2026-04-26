@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = "secret123"
 
 # ---------------- DB CONNECTION ----------------
-def get_db():
+jhkjggfghfhgfhgkfnhfdef get_db():
     conn = sqlite3.connect("bank.db")
     conn.row_factory = sqlite3.Row
     return conn
